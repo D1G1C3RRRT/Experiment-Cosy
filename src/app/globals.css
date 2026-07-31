@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f4f1ea;
+  --foreground: #1c1d21;
+}
+
+.dark {
+  --background: #0d0e11;
+  --foreground: #f4f1ea;
+}
+
+body {
+  @apply bg-background text-foreground font-sans antialiased;
+}
+
+::selection {
+  @apply bg-terracotta text-cream;
+}
+
+@layer components {
+  .glass-panel {
+    @apply backdrop-blur-xl bg-cream/80 dark:bg-slate-card/80 border border-white/20;
+  }
+
+  .panel-card {
+    @apply glass-panel rounded-3xl border border-charcoal/10 shadow-brutal;
+  }
+
+  .section-title {
+    @apply font-display text-lg font-semibold tracking-tight;
+  }
+}

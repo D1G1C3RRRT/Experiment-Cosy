@@ -1,0 +1,83 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum Decision {
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                     String             @id @default(uuid())
+  email                  String             @unique
+  name                   String?
+  avatarUrl              String?
+  planTier               PlanTier           @default(FREE)
+  stripeCustomerId       String?            @unique
+  stripeSubscriptionId   String?            @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  projects               Project[]
+  logs                   AiInteractionLog[]
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  isPublic    Boolean  @default(false)
+  settings    Json?
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  files       File[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model File {
+  id        String   @id @default(uuid())
+  path      String
+  content   String   @db.Text
+  language  String?
+  version   Int      @default(1)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, path])
+  @@index([projectId])
+}
+
+model AiInteractionLog {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId       String?
+  prompt          String    @db.Text
+  generatedCode   String    @db.Text
+  status          Decision
+  rejectionReason String?
+  agentType       String
+  modelUsed       String?
+  tokensUsed      Int?
+  latencyMs       Int
+  createdAt       DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([projectId])
+}
